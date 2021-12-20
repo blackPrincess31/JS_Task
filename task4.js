@@ -1,14 +1,12 @@
-const { table } = require('console');
-const { generateKey } = require('crypto');
+let randomatic = require('randomatic');
+let crypto = require('crypto')
 
 
 let menu_items = "1 - rock\n2 - paper\n3 - scissors\n4 - lizard\n5 - Spock\n0 - exit\n? - help\n Enter your move:";
 
 let mid_value = 3;
 
-let user_win_message = "You win";
-let pc_win_message = "Computer Win";
-let draw_message = "Draw";
+
 let err_prompt_message = "Wrong input";
 
 var readline = require('readline').createInterface({
@@ -25,105 +23,79 @@ let choose_table = {
 };
 
 
-class Computer {
-    choise = GenerateComputerStep();
-    hmac = 
-    _max = 5;
-    _min = 1;
-    MakeChoise(params) {
-        this.choise = Math.floor(Math.random() * (max - min + 1)) + min;
+class HmacKey {
+    value;
+    constructor() {
+        let source = randomatic('Aa0!', 128);
+        this.value = Buffer.from(source).toString('hex');
     }
+}
 
+class Hmac {
+    value;
+    key;
+
+    constructor(value) {
+        this.key = new HmacKey();
+        this.value = crypto.createHmac('SHA3-256', this.key.value).update(value + '').digest('hex');
+    }
+}
+
+class Computer {
+    choise;
+    hmac;
+    #max = 5;
+    #min = 1;
+    
+    constructor(){
+        this.MakeChoise();
+    }
+    MakeChoise() {
+        this.choise = Math.floor(Math.random() * (this.#max - this.#min + 1)) + this.#min;
+        this.hmac = new Hmac(this.choise);
+    }
 };
 
-let mykey = require('randomatic');
+computer_player = new Computer();
 
-class GenKey {
+class Game {
+    //returns -1 for left won, 1 for right won or 0 for draw
+    static Compare(left, right) {
+        let diff = left - right;
 
-    constructor(mykey) {
-        this.mykey = mykey;
-    }
-
-    GenerateKey() {
-
-        mykey = mykey('Aa0!', 128);
-        mykey = Buffer.from(mykey).toString('hex');
-    }
-}
-
-value = new GenKey();
-
-
-
-computer_step = GenerateComputerStep();
-
-class GenHmac {
-
-    constructor() {
-
-        this.mykey = value.GenerateKey();
-    }
-
-    DoHmac() {
-
-        var hmac = require('crypto').createHmac('SHA3-256', mykey).update(computer_step + '').digest('hex');
-        console.log('hmac:' + hmac);
-
-    }
-}
-
-hmac = new GenHmac();
-
-
-
-
-//returns -1 for left won, 1 for right won or 0 for draw
-function CompareChoice(left, right) {
-    let diff = left - right;
-
-    if (Math.abs(diff) >= mid_value) {
-        if (diff > 0) {
-            return 1;
+        if (Math.abs(diff) >= mid_value) {
+            if (diff > 0) {
+                return 1;
+            }
+            return -1
         }
-        return -1
-    }
 
-    if (diff < 0) {
-        return 1
-    }
+        if (diff < 0) {
+            return 1
+        }
 
-    if (diff > 0) {
-        return -1
-    }
+        if (diff > 0) {
+            return -1
+        }
 
-    return 0
+        return 0
+    }
 }
 
 class TabHelp {
-    help_result_table = {
+    #help_result_table = {
         '1': 'Lose',
         '-1': 'Win',
         '0': 'Draw'
     };
-
-
-    constructor(rock, paper, spock, scissors, lizard) {
-        rock = this.rock;
-        paper = this.paper;
-        spock = this.spock;
-        scissors = this.scissors;
-        lizard = this.lizard;
-    }
-
-    callHelp() {
-
-
+    
+    CallHelp() {
         let formated_table = {};
         for (const left in choose_table) {
             formated_table[choose_table[left]] = {}
             for (const right in choose_table) {
                 let result = CompareChoice(left, right);
-                formated_table[choose_table[left]][choose_table[right]] = this.help_result_table[result];
+                formated_table[choose_table[left]][choose_table[right]] = this.#help_result_table[result];
             }
         }
         console.log('rows for player | columns for computer');
@@ -131,71 +103,101 @@ class TabHelp {
     }
 }
 
-tab = new TabHelp();
-
-
-class WinLose {
-
-    compareChoice(user, pc) {
-        let diff = user - pc
-
-        let result = CompareChoice(user, pc)
+class MessageProvider {
+    static #user_win_message = "You win";
+    static #pc_win_message = "Computer Win";
+    static #draw_message = "Draw";
+    
+    static #help = new TabHelp();
+    static PrintWinner(user, pc) {
+        let result = Game.Compare(user, pc)
 
         if (result == -1) {
-            return user_win_message;
+            console.log(this.#user_win_message);
         }
         if (result == 1) {
-            return pc_win_message
+            console.log(this.#pc_win_message);
         }
-        return draw_message
+        if (result == 0){
+            console.log(this.#draw_message);
+        }
+        
+    }
+    
+    static PrintHelp(){
+        this.#help.CallHelp();
+    }
+
+    static PrintMenu(){
+        console.log(menu_items);
+    }
+
+    static PrintError(){
+        console.log(err_prompt_message)
+    }
+
+    static PrintComputerHMAC(){
+        console.log("Compuuter HMAC: " + computer_player.hmac.value);
+    }
+
+    static PrintComputerKey(){
+        console.log("Computer Key: " + computer_player.hmac.key.value);
+    }
+
+    static PrintGameResult(computer_step, user_choose){
+        console.log('Computer move: ' + choose_table[computer_step]);
+        console.log('Your move: ' + choose_table[user_choose]);
+
+        console.log()
+        this.PrintWinner(user_choose, computer_step);
+        this.PrintComputerKey();
+    }
+    
+    static PrintGameStart(){
+        console.log('--Task 4--');
+
+        computer_player.MakeChoise();
+
+        this.PrintComputerHMAC();
+        this.PrintMenu();
+    }
+
+    static ProcessGameInput(user_input){
+        if (user_input == '0') {
+            readline.close();
+            return
+        }
+        if (user_input == '?') {
+            MessageProvider.PrintHelp()
+            return
+        }
+    
+        let user_choose = '';
+        for (const el in choose_table) {
+            if (user_input == el || user_input == choose_table[el]) {
+                user_choose = el;
+                break;
+            }
+        }
+    
+        if (user_choose == '') {
+            MessageProvider.PrintError()
+            return
+        }
+
+        this.PrintGameResult(computer_player.choise, user_choose);
     }
 }
 
-res = new WinLose();
-
-
-//console.log(menu_items);
-
-
-
 readline.on('line', (user_input) => {
-    if (user_input == '0') {
-        readline.close();
-        return
-    }
-    if (user_input == '?') {
-        tab.callHelp();
-        console.log(menu_items);
-        return
-    }
+    MessageProvider.ProcessGameInput(user_input);
 
-    let user_choose = '';
-    for (const el in choose_table) {
-        if (user_input == el || user_input == choose_table[el]) {
-            user_choose = el;
-            break;
-        }
-    }
+    console.log('------------');
 
-    if (user_choose == '') {
-        console.log(err_prompt_message)
-        return
-    }
-
-
-    console.log('Computer move: ' + choose_table[computer_step]);
-    console.log('Your move: ' + choose_table[user_choose]);
-
-    let result = res.compareChoice(user_input, computer_step)
-
-    console.log(result)
-    console.log('key:' + mykey);
-
-
+    computer_player.MakeChoise();
+    
+    MessageProvider.PrintComputerHMAC();
+    MessageProvider.PrintMenu();
 });
 
-hmac.DoHmac();
-console.log(menu_items);
-
-
-
+MessageProvider.PrintGameStart();
