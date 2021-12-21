@@ -5,7 +5,7 @@ const { argv } = require('process');
 
 
 let menu_items = "1 - rock\n2 - paper\n3 - scissors\n4 - lizard\n5 - Spock\n0 - exit\n? - help\n Enter your move:";
-let err_prompt_message = "Wrong input! Use 1,2,3,4,5 ";
+let err_prompt_message = "Wrong input! Use 1,2,3,4,5,0,?";
 
 var readline = require('readline').createInterface({
     input: process.stdin,
@@ -203,13 +203,22 @@ function doublicat() {
     }
 }
 
-if (process.argv.length % 2 == 0) {
-    console.log("Wrong!Enter an odd number of arguments");
+
+if (process.argv.length == 2) {
+    console.log("Wrong!Empty string");
     readline.close();
     process.exit();
 }
 
-if (process.argv.length >= 4) {
+
+if (process.argv.length >= 5) {
+
+    if (process.argv.length % 2 == 0) {
+        console.log("Wrong!Enter an odd number of arguments");
+        readline.close();
+        process.exit();
+    }
+
 
     for (let i = 2; i < process.argv.length; i++) {
 
@@ -221,7 +230,9 @@ if (process.argv.length >= 4) {
         readline.close();
     }
 }
+
 else {
+
     readline.on('line', (user_input) => {
         MessageProvider.ProcessGameInput(user_input);
 
