@@ -5,7 +5,7 @@ const { argv } = require('process');
 
 
 let menu_items = "1 - rock\n2 - paper\n3 - scissors\n4 - lizard\n5 - Spock\n0 - exit\n? - help\n Enter your move:";
-let err_prompt_message = "Wrong input";
+let err_prompt_message = "Wrong input! Use 1,2,3,4,5 ";
 
 var readline = require('readline').createInterface({
     input: process.stdin,
@@ -194,16 +194,30 @@ class MessageProvider {
 }
 
 
+doublicat(process.argv);
+function doublicat() {
+    const uniq = [...new Set(process.argv)]
+    if (process.argv.length !== uniq.length) {
+        console.log("Reiteration!Use arguments only once");
+        readline.close();
+        process.exit();
+        
+    }
+}
 
 if (process.argv.length >= 4) {
+
     for (let i = 2; i < process.argv.length; i++) {
+
         console.log(" Game #", i - 1)
 
         MessageProvider.PrintComputerHMAC();
         MessageProvider.ProcessGameInput(process.argv[i]);
+
+        readline.close();
     }
-    readline.close();
-} else {
+}
+else {
     readline.on('line', (user_input) => {
         MessageProvider.ProcessGameInput(user_input);
 
