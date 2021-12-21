@@ -21,21 +21,6 @@ let choose_table = {
 };
 
 
-/*class arguments{
-
-    constructor(){
-        
-    }
-    }
-     this.process = require('process'); 
-     if (process.argv.length >= 3) {
-             for(i=process.argv[3];i<=process.argv[process.argv.length];i++){
-             value = process.argv[i]; 
-             ProcessGameInput(value);
-   
-   
-}*/
-
 class HmacKey {
     value;
     constructor() {
