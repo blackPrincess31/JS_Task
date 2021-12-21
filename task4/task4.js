@@ -193,7 +193,6 @@ class MessageProvider {
 
 }
 
-
 doublicat(process.argv);
 function doublicat() {
     const uniq = [...new Set(process.argv)]
@@ -201,8 +200,13 @@ function doublicat() {
         console.log("Reiteration!Use arguments only once");
         readline.close();
         process.exit();
-        
     }
+}
+
+if (process.argv.length % 2 == 0) {
+    console.log("Wrong!Enter an odd number of arguments");
+    readline.close();
+    process.exit();
 }
 
 if (process.argv.length >= 4) {
